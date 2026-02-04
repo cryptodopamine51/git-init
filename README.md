@@ -10,6 +10,21 @@ cp .env.example .env
 npm run dev
 ```
 
+## Устранение ошибки 403 при npm install
+
+Если установка падает с ошибкой «403 Forbidden» при обращении к `registry.npmjs.org`, это означает блокировку доступа к публичному npm‑registry (например, политикой безопасности или сетевым прокси). Сам код проекта не зависит от закрытых пакетов, поэтому достаточно сменить registry на разрешённый:
+
+```bash
+# вариант 1: однократный запуск через переменную окружения
+NPM_CONFIG_REGISTRY=https://registry.npmmirror.com npm install
+
+# вариант 2: глобально через npm config
+npm config set registry https://registry.npmmirror.com
+npm install
+```
+
+Если в вашей инфраструктуре используется корпоративный npm‑proxy, укажите его URL вместо `registry.npmmirror.com`.
+
 Проверка здоровья:
 
 ```bash
