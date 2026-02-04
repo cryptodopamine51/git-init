@@ -1,6 +1,5 @@
 import fastify from "fastify";
 import { registerMcpRoutes } from "./mcp/server";
-import { registerRateLimit } from "./utils/rateLimit";
 import { env } from "./config/env";
 
 const app = fastify({
@@ -10,7 +9,6 @@ const app = fastify({
 });
 
 const start = async () => {
-  await registerRateLimit(app);
   await registerMcpRoutes(app);
 
   await app.listen({ port: env.PORT, host: "0.0.0.0" });

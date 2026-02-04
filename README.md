@@ -122,7 +122,7 @@ curl -X POST http://localhost:3000/mcp/call \
 - Поллинг завершится по `finished==1`, `progress==100`, достижению лимитов или таймауту.
 - Лимиты регулируются через `TOURVISOR_POLL_INTERVAL_MS`, `TOURVISOR_POLL_TIMEOUT_MS`, `TOURVISOR_MAX_BLOCKS`, `TOURVISOR_MAX_OFFERS`.
 - Поле `deep_link` возвращается как «UNKNOWN», если отсутствует идентификатор тура.
-- На MCP endpoint’ах включён rate limit по IP.
+- На MCP endpoint’ах включён in-memory rate limit по IP без внешних пакетов.
 - `get_tour_details` выключен по умолчанию. Включается через `ENABLE_TOUR_DETAILS=true`.
 
 ## Деплой (Render / Railway)

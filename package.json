@@ -15,7 +15,6 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@fastify/rate-limit": "^9.1.0",
     "dotenv": "^16.4.5",
     "fastify": "^4.27.0",
     "pino": "^9.3.2",

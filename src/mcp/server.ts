@@ -1,13 +1,14 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { getToolHandlers } from "./tools";
 import { requireApiKey } from "./auth";
+import { rateLimitGuard } from "../utils/rateLimit";
 
 export const registerMcpRoutes = async (app: FastifyInstance) => {
   app.get("/health", async () => ({ ok: true }));
 
   app.get(
     "/mcp/sse",
-    { preHandler: requireApiKey, config: { rateLimit: true } },
+    { preHandler: [requireApiKey, rateLimitGuard] },
     async (request, reply) => {
       reply.raw.setHeader("Content-Type", "text/event-stream");
       reply.raw.setHeader("Cache-Control", "no-cache");
@@ -25,7 +26,7 @@ export const registerMcpRoutes = async (app: FastifyInstance) => {
 
   app.post(
     "/mcp/call",
-    { preHandler: requireApiKey, config: { rateLimit: true } },
+    { preHandler: [requireApiKey, rateLimitGuard] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = request.body as { tool?: string; args?: unknown };
       const toolName = body?.tool;
