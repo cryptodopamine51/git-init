@@ -16,10 +16,10 @@ npm run dev
 
 ```bash
 # вариант 1: однократный запуск через переменную окружения
-NPM_CONFIG_REGISTRY=https://registry.npmmirror.com npm install
+NPM_CONFIG_REGISTRY=https://registry.npmmirror.com/ npm install
 
 # вариант 2: глобально через npm config
-npm config set registry https://registry.npmmirror.com
+npm config set registry https://registry.npmmirror.com/
 npm install
 ```
 
