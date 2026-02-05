@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "test": "vitest run",
-    "mcp:client": "tsx examples/mcp-client.ts"
+    "mcp:client": "tsx examples/mcp-client.ts",
     "lint": "eslint ."
   },
   "engines": {
