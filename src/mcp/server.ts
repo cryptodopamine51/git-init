@@ -4,7 +4,16 @@ import { requireApiKey } from "./auth";
 import { rateLimitGuard } from "../utils/rateLimit";
 
 export const registerMcpRoutes = async (app: FastifyInstance) => {
-  app.get("/health", async () => ({ ok: true }));
+  app.get("/", async () => {
+  return {
+    ok: true,
+    service: "tourvisor-mcp",
+    endpoints: ["/", "/health", "/mcp/sse", "/mcp/call"],
+    tools: ["get_dictionaries", "search_tours", "get_tour_details"],
+    auth: { header: "x-api-key", env: "MCP_API_KEY" }
+  };
+});
+app.get("/health", async () => ({ ok: true }));
 
   app.get(
     "/mcp/sse",
