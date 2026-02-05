@@ -9,7 +9,10 @@ const app = fastify({
 });
 
 const start = async () => {
-  await registerMcpRoutes(app);
+await registerMcpRoutes(app);
+
+await app.ready();
+app.log.info("\n" + app.printRoutes());
 
   await app.listen({ port: env.PORT, host: "0.0.0.0" });
 };
