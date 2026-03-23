@@ -1,26 +1,49 @@
-# Malakhov AI Digest — Slices 1-3
+# Malakhov AI Digest
 
-## Что уже покрыто
-- Slice 1: backend + Telegram foundation.
-- Slice 2: ingestion (`sources`, `raw_items`, `source_runs`).
-- Slice 3: normalization + event clustering + classification + scoring + events preview.
+Backend платформа для Telegram-дайджеста по ИИ:
+- ingestion источников,
+- нормализация и кластеризация в события,
+- классификация и scoring,
+- foundation для daily/weekly delivery.
 
-## Slice 3: ключевые возможности
-- Таблицы `events`, `event_sources`, `event_categories`, `event_tags`.
-- Pipeline `fetched -> normalized -> clustered | discarded`.
-- Rule-based normalization (clean text, entities, outbound links, language).
-- Deterministic clustering (canonical URL + title/entity signature).
-- Rule-based classification по секциям:
-  - `important`, `ai_news`, `coding`, `investments`, `alpha`.
-- Configurable scoring:
-  - `importance_score`, `market_impact_score`, `ai_news_score`, `coding_score`, `investment_score`, `confidence_score`.
-- Выбор primary source + supporting sources.
-- Internal preview events endpoints.
+## Текущий статус
 
-## Локальный запуск
+Реализованы foundation-слои:
+- **Slice 1**: FastAPI + PostgreSQL + Alembic + Telegram bot foundation.
+- **Slice 2**: sources/raw_items/source_runs + ingestion adapters + preview endpoints.
+- **Slice 3**: normalization + clustering + classification + scoring + events preview.
+
+Следующая цель: построить **рабочий daily/weekly delivery layer** поверх event-layer.
+
+## Архитектура (высокоуровнево)
+
+- `app/api/` — API и internal preview routes.
+- `app/db/` — SQLAlchemy модели и session layer.
+- `app/services/ingestion/` — сбор источников в `raw_items`.
+- `app/services/normalization/` — очистка и обогащение raw items.
+- `app/services/clustering/` — группировка материалов в events.
+- `app/services/classification/` — section assignment.
+- `app/services/scoring/` — rule-based scores.
+- `app/services/events/` — orchestration pipeline process-events.
+- `app/jobs/` — APScheduler jobs (`ingest`, `process-events`).
+- `scripts/` — утилиты локального запуска и seed.
+
+## Секреты и переменные окружения
+
+Секреты **не хранятся в репозитории**.
+
+Используйте только environment variables:
+- `BOT_TOKEN`
+- `DATABASE_URL`
+
+Пример локального `.env` можно сделать на базе `.env.example`, но реальные значения подставляются из окружения.
+
+## Быстрый локальный старт
 
 ```bash
 cp .env.example .env
+# заполните .env без коммита секретов
+
 docker compose up -d
 python -m venv .venv
 source .venv/bin/activate
@@ -30,29 +53,25 @@ python scripts/seed_sources.py
 uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-## Запуск ingestion и process-events вручную
+## Полезные internal endpoints
 
 ```bash
+# health
+curl http://localhost:8000/health
+curl http://localhost:8000/health/db
+
+# ingestion
 curl -X POST http://localhost:8000/internal/jobs/ingest
-curl -X POST http://localhost:8000/internal/jobs/process-events
-```
-
-## Internal preview
-
-```bash
 curl http://localhost:8000/internal/sources
 curl http://localhost:8000/internal/raw-items?limit=20
 curl http://localhost:8000/internal/source-runs?limit=20
+
+# events pipeline
+curl -X POST http://localhost:8000/internal/jobs/process-events
 curl http://localhost:8000/internal/events?limit=20
 curl http://localhost:8000/internal/events/1
 curl http://localhost:8000/internal/events/preview/day/2026-03-23
 ```
-
-## Как проверить clustering/classification локально
-1. Засейдить источники и прогнать ingestion.
-2. Прогнать `process-events`.
-3. Проверить `/internal/events` и `/internal/events/{id}`.
-4. Проверить primary section в `event_categories` и score-поля в `events`.
 
 ## Тесты
 
@@ -60,7 +79,16 @@ curl http://localhost:8000/internal/events/preview/day/2026-03-23
 pytest -q tests/test_services.py tests/test_api_health.py tests/test_ingestion.py tests/test_events_pipeline.py
 ```
 
-## Ограничения Slice 3
-- Нет digest builder/daily/weekly выпуска и delivery контента.
-- Нет advanced ML ranking и UI-редактуры.
-- `alpha` присутствует как section type/placeholder, но не формируется отдельным источником автоматически.
+## Подготовка к следующей итерации (delivery layer)
+
+Для следующего шага (daily/weekly delivery) README и проект должны опираться на:
+- `AGENTS.md`
+- `docs/editorial_rules.md`
+- `data/seed_sources.csv`
+
+> В текущем состоянии репозитория `docs/editorial_rules.md` и `data/seed_sources.csv` отсутствуют. Добавьте их в следующей итерации перед внедрением delivery-логики.
+
+## Безопасность
+
+- Не выводите значения `BOT_TOKEN`, `DATABASE_URL` в логах/ответах.
+- Не коммитьте реальные секреты в `.env`, README и любые файлы репозитория.
