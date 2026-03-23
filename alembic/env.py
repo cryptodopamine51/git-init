@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.core.config import get_settings
 from app.db.base import Base
-from app.db.models import delivery, raw_item, source, source_run, user  # noqa: F401
+from app.db.models import delivery, event, event_category, event_source, event_tag, raw_item, source, source_run, user  # noqa: F401
 
 config = context.config
 settings = get_settings()

@@ -12,6 +12,7 @@ DEFAULT_SOURCES = [
         language="en",
         country_scope="global",
         priority_weight=5,
+        meta_json={"section_bias": {"ai_news": 0.9, "coding": 0.5}},
     ),
     SourceSeedItem(
         source_type=SourceType.OFFICIAL_BLOG,
@@ -20,6 +21,7 @@ DEFAULT_SOURCES = [
         language="en",
         country_scope="global",
         priority_weight=4,
+        meta_json={"section_bias": {"important": 0.7, "investments": 0.4}},
     ),
 ]
 

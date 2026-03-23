@@ -7,6 +7,7 @@ from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.db.session import check_db_connection
 from app.jobs.ingest_job import register_ingestion_job
+from app.jobs.process_events_job import register_process_events_job
 from app.jobs.scheduler import create_scheduler
 
 
@@ -15,6 +16,7 @@ async def lifespan(_: FastAPI):
     configure_logging()
     scheduler = create_scheduler()
     register_ingestion_job(scheduler)
+    register_process_events_job(scheduler)
     scheduler.start()
     try:
         yield

@@ -15,6 +15,7 @@ class SourceSeedItem:
     is_active: bool = True
     language: str | None = "en"
     country_scope: str | None = "global"
+    meta_json: dict | None = None
 
 
 class SourceRegistryService:
@@ -37,6 +38,7 @@ class SourceRegistryService:
             is_active=item.is_active,
             language=item.language,
             country_scope=item.country_scope,
+            meta_json=item.meta_json,
         )
         self.session.add(source)
         await self.session.commit()
@@ -60,6 +62,7 @@ class SourceRegistryService:
                     is_active=item.is_active,
                     language=item.language,
                     country_scope=item.country_scope,
+                    meta_json=item.meta_json,
                 )
             )
             inserted += 1
