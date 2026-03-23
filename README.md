@@ -1,60 +1,28 @@
-# Malakhov AI Digest — Slice 1 (Bot Foundation)
+# Malakhov AI Digest — Slices 1-2
 
-Первый вертикальный срез Telegram-бота с FastAPI backend, PostgreSQL, миграциями и базовой bot UX-логикой.
+Проект включает:
+- Slice 1: foundation backend + Telegram bot;
+- Slice 2: source ingestion + `raw_items` storage.
 
-## Что реализовано в Slice 1
-- FastAPI backend с `/health` и `/health/db`.
-- SQLAlchemy 2.x + Alembic миграции.
-- Таблицы `users` и `deliveries`.
-- Telegram bot foundation на aiogram 3 (polling mode).
-- `/start` onboarding с выбором режима подписки (`daily`/`weekly`).
-- Экран «О боте».
-- Раздел «Настройки» со сменой режима.
-- Базовое меню: «Сегодня», «Итоги недели», «Настройки», «О боте».
-- Заглушки для «Сегодня» и «Итоги недели».
-- Логирование действий доставки в `deliveries`.
-- Базовый каркас `jobs/` под APScheduler.
-
-## Структура
-
-```text
-app/
-  api/main.py
-  bot/
-    dispatcher.py
-    handlers/common.py
-    keyboards/reply.py
-    texts.py
-  core/
-    config.py
-    logging.py
-  db/
-    base.py
-    session.py
-    models/
-      user.py
-      delivery.py
-  jobs/scheduler.py
-  services/
-    user_service.py
-    delivery_service.py
-    about_service.py
-alembic/
-  env.py
-  versions/20260323_0001_slice1_foundation.py
-tests/
-  test_api_health.py
-  test_services.py
-scripts/run_bot.py
-```
-
-## Предварительные требования
-- Python 3.12+
-- Docker + Docker Compose
+## Реализовано (Slice 2)
+- Таблицы `sources`, `raw_items`, `source_runs`.
+- Адаптерный ingestion contract.
+- 2 адаптера:
+  - RSS/Atom adapter;
+  - JSON feed adapter (как простой website feed).
+- Ingestion service c dedup по `(source_id, external_id)`.
+- Source run logging (`success` / `failed`).
+- APScheduler job для периодического ingestion.
+- Internal preview endpoints:
+  - `GET /internal/sources`
+  - `GET /internal/raw-items`
+  - `GET /internal/source-runs`
+  - `POST /internal/jobs/ingest`
+- Seed scripts для стартовых источников.
 
 ## Локальный запуск
 
-1. Скопировать env:
+1. Создать `.env`:
 ```bash
 cp .env.example .env
 ```
@@ -76,27 +44,44 @@ pip install -e .[dev]
 alembic upgrade head
 ```
 
-5. Запустить API:
+5. Засеять источники:
+```bash
+python scripts/seed_sources.py
+```
+
+6. Запустить API:
 ```bash
 uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-6. Запустить бота (в отдельном терминале):
+7. (Опционально) запустить Telegram polling bot:
 ```bash
 python scripts/run_bot.py
 ```
 
-## Проверка
-- API health:
+## Ручной запуск ingestion
+
+Через internal endpoint:
 ```bash
-curl http://localhost:8000/health
-curl http://localhost:8000/health/db
+curl -X POST http://localhost:8000/internal/jobs/ingest
 ```
+
+Проверка источников и raw-items:
+```bash
+curl http://localhost:8000/internal/sources
+curl http://localhost:8000/internal/raw-items?limit=20
+curl http://localhost:8000/internal/source-runs?limit=20
+```
+
+## Поддерживаемые источники в Slice 2
+- `rss_feed` (RSS/Atom URL)
+- `official_blog` (RSS/Atom URL)
+- `website` (JSON feed endpoint формата `{ "items": [...] }`)
 
 ## Тесты
 ```bash
-pytest -q
+pytest -q tests/test_services.py tests/test_api_health.py tests/test_ingestion.py
 ```
 
-## Scope Slice 1 (осознанные ограничения)
-Не реализованы ingestion, events, scoring, digest-builder, knowledge base, webhook deployment, admin и web UI.
+## Ограничения Slice 2
+Не входят в этот этап: normalization pipeline, clustering, scoring, digest builder, Telegram content delivery, ingestion из X/Twitter/сложных каналов.
